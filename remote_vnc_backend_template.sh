@@ -25,8 +25,6 @@ if [ $DISTRO_VERSION = "6" ]; then
 	su - <USERNAME> -c "mkdir -p ~/.vnc && echo \"<PASSWD>\" | vncpasswd -f > ~/.vnc/passwd && chmod 600 ~/.vnc/passwd"
 
 	/sbin/service vncserver start
-
-
 elif [ $DISTRO_VERSION = "7" ]; then
 	yum groupinstall -y 'Server with GUI'
 	yum install -y tigervnc-server
@@ -41,5 +39,6 @@ elif [ $DISTRO_VERSION = "7" ]; then
 	systemctl start vncserver@:1.service
 else
 	echo "Error: Unknown distro: '$DISTRO_VERSION'" 1>&2
+	exit 1
 fi
 echo -e "\n\nConnect to vnc server using '<REMOTE_MACHINE_IP>:1' and password '<PASSWD>'."
