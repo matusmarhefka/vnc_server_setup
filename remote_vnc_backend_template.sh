@@ -41,4 +41,3 @@ else
 	echo "Error: Unknown distro: '$DISTRO_VERSION'" 1>&2
 	exit 1
 fi
-echo -e "\n\nConnect to vnc server using '<REMOTE_MACHINE_IP>:1' and password '<PASSWD>'."
