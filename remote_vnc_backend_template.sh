@@ -72,8 +72,8 @@ elif [ $DISTRO_VERSION = "7" ]; then
 
 	systemctl start vncserver@:1.service
 elif [ $DISTRO_VERSION = "8" ]; then
+	yum groupinstall -y Workstation
 	yum install -y dbus-x11 \
-		gnome-session gnome-shell gnome-terminal \
 		firefox python3-{pyyaml,jinja2,markupsafe,bcrypt,paramiko,pynacl,pyasn1,pip}
 
 	# ansible can't be installed by dnf (yet)
@@ -87,4 +87,4 @@ else
 	exit 1
 fi
 
-gpasswd -a "<USERNAME> wheel
+gpasswd -a "<USERNAME>" wheel
