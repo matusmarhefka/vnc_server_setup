@@ -148,7 +148,8 @@ ssh "${NO_KNOWN_HOSTS_WARNING[@]}" -t "$REMOTE_USER@$REMOTE_MACHINE_IP" "chmod +
 
 if test $? = 0
 then
-    echo -e "\n\nConnect to vnc server using 'vncviewer $REMOTE_MACHINE_IP:1' and password '$PASSWD'."
+    # SecurityTypes=VncAuth is there because of the vncviewer TLS-related bug that causes it to crash.
+    echo -e "\n\nConnect to vnc server using 'vncviewer SecurityTypes=VncAuth $REMOTE_MACHINE_IP:1' and password '$PASSWD'."
 else
     echo "Something went wrong on the remote server."
 fi
