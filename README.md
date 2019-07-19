@@ -1,5 +1,5 @@
 # vnc_server_setup
-Setup vnc server on RHEL6/RHEL7 remote machine.
+Setup vnc server on RHEL 6/7/8 remote machine.
 
 # Example usage
 
