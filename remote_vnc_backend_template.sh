@@ -18,8 +18,16 @@ create_vnc_password() {
 
 
 create_vncserver_unit_file () {
-	cp /{lib,etc}/systemd/system/vncserver@.service
-	sed -i "s|<USER>|<USERNAME>|g" /etc/systemd/system/vncserver@.service
+	if [ -f /lib/systemd/system/vncserver@.service ] ; then
+		cp /{lib,etc}/systemd/system/vncserver@.service
+		sed -i "s|<USER>|<USERNAME>|g" /etc/systemd/system/vncserver@.service
+	elif [ -f /usr/lib/systemd/system/vncserver@.service ] ; then
+		cp /usr/lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@.service
+		sed -i "s|<USER>|<USERNAME>|g" /etc/systemd/system/vncserver@.service
+	else
+		cp /usr/lib/systemd/user/vncserver@.service /etc/systemd/system/vncserver@.service
+		sed -i '/\[Service\]/a User=<USERNAME>' /etc/systemd/system/vncserver@.service
+	fi
 }
 
 
@@ -50,10 +58,12 @@ post_setup_vncserver_rhel8() {
 	setenforce 0
 	systemctl start vncserver@:1.service
 	# wait to be sure that the configfile is created
-	sleep 1
-	# maybe add Environment=XDG_SESSION_TYPE=x11 under [Service]
-	sed -i 's|^/etc/X11/xinit/xinitrc|# \0\nexport XDG_SESSION_TYPE=x11\nexport DISPLAY=:1\ngnome-session|' "/home/<USERNAME>/.vnc/xstartup"
-	systemctl restart vncserver@:1.service
+	timeout 1m bash -c "while [ ! -f /home/<USERNAME>/.vnc/xstartup ]; do sleep 1; done"
+	if [ $? -eq 0 ]; then
+		# maybe add Environment=XDG_SESSION_TYPE=x11 under [Service]
+		sed -i 's|^/etc/X11/xinit/xinitrc|# \0\nexport XDG_SESSION_TYPE=x11\nexport DISPLAY=:1\ngnome-session|' "/home/<USERNAME>/.vnc/xstartup"
+		systemctl restart vncserver@:1.service
+	fi
 }
 
 
