@@ -21,6 +21,9 @@ create_vncserver_unit_file () {
 	if [ -f /lib/systemd/system/vncserver@.service ] ; then
 		cp /{lib,etc}/systemd/system/vncserver@.service
 		sed -i "s|<USER>|<USERNAME>|g" /etc/systemd/system/vncserver@.service
+	elif [ -f /usr/lib/systemd/system/vncserver@.service ] ; then
+		cp /usr/lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@.service
+		sed -i "s|<USER>|<USERNAME>|g" /etc/systemd/system/vncserver@.service
 	else
 		cp /usr/lib/systemd/user/vncserver@.service /etc/systemd/system/vncserver@.service
 		sed -i '/\[Service\]/a User=<USERNAME>' /etc/systemd/system/vncserver@.service
