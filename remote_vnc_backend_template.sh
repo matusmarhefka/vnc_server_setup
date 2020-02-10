@@ -68,14 +68,14 @@ post_setup_vncserver_rhel8() {
 
 
 if [ $DISTRO_VERSION = "6" ]; then
-	yum groupinstall -y Desktop
+	yum groupinstall -y Desktop || exit 1
 	yum install -y ansible
 
 	setup_vncserver_upstart
 
 	/sbin/service vncserver start
 elif [ $DISTRO_VERSION = "7" ]; then
-	yum groupinstall -y 'Server with GUI'
+	yum groupinstall -y 'Server with GUI' || exit 1
 	yum install -y ansible
 
 	setup_vncserver_systemd
@@ -83,6 +83,10 @@ elif [ $DISTRO_VERSION = "7" ]; then
 	systemctl start vncserver@:1.service
 elif [ $DISTRO_VERSION = "8" ]; then
 	yum groupinstall -y Workstation
+	if [ $? -ne 0 ]; then
+		# If Workstation group is not available install 'Server with GUI'
+		yum groupinstall -y 'Server with GUI' || exit 1
+	fi
 	yum install -y dbus-x11 \
 		firefox python3-{pyyaml,jinja2,markupsafe,bcrypt,paramiko,pynacl,pyasn1,pip}
 
