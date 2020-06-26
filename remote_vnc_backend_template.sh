@@ -4,6 +4,8 @@
 #
 
 DISTRO_VERSION=$(grep -o "[0-9]*" /etc/redhat-release | head -1)
+DISTRO_FULL_VERSION=$(grep -o "[0-9]\+\.[0-9]\+" /etc/redhat-release)
+
 
 grep -q <USERNAME> /etc/passwd
 if [ $? -ne 0 ]; then
@@ -44,25 +46,37 @@ setup_vncserver_upstart() {
 
 
 setup_vncserver_systemd() {
-	yum install -y tigervnc-server
+	yum install -y tigervnc-server bc
 
-	create_vncserver_unit_file
-	systemctl daemon-reload
+	if (( $(echo "$DISTRO_FULL_VERSION >= 8.3" | bc -l) )); then
+		# Since 8.3 version vnc needs to be configured differently.
+		semodule -i /usr/share/selinux/packages/vncsession.pp
+		restorecon /usr/sbin/vncsession /usr/libexec/vncsession-start
+		echo "session=gnome" >> /etc/tigervnc/vncserver-config-defaults
+		echo ":1=<USERNAME>" >> /etc/tigervnc/vncserver.users
+	else
+		create_vncserver_unit_file
+		systemctl daemon-reload
+	fi
+
 	systemctl enable vncserver@:1.service
-
 	create_vnc_password
 }
 
 
 post_setup_vncserver_rhel8() {
-	setenforce 0
-	systemctl start vncserver@:1.service
-	# wait to be sure that the configfile is created
-	timeout 1m bash -c "while [ ! -f /home/<USERNAME>/.vnc/xstartup ]; do sleep 1; done"
-	if [ $? -eq 0 ]; then
-		# maybe add Environment=XDG_SESSION_TYPE=x11 under [Service]
-		sed -i 's|^/etc/X11/xinit/xinitrc|# \0\nexport XDG_SESSION_TYPE=x11\nexport DISPLAY=:1\ngnome-session|' "/home/<USERNAME>/.vnc/xstartup"
-		systemctl restart vncserver@:1.service
+	if (( $(echo "$DISTRO_FULL_VERSION >= 8.3" | bc -l) )); then
+		systemctl start vncserver@:1.service
+	else
+		setenforce 0
+		systemctl start vncserver@:1.service
+		# wait to be sure that the configfile is created
+		timeout 1m bash -c "while [ ! -f /home/<USERNAME>/.vnc/xstartup ]; do sleep 1; done"
+		if [ $? -eq 0 ]; then
+			# maybe add Environment=XDG_SESSION_TYPE=x11 under [Service]
+			sed -i 's|^/etc/X11/xinit/xinitrc|# \0\nexport XDG_SESSION_TYPE=x11\nexport DISPLAY=:1\ngnome-session|' "/home/<USERNAME>/.vnc/xstartup"
+			systemctl restart vncserver@:1.service
+		fi
 	fi
 }
 
