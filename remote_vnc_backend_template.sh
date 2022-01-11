@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This script will setup vnc server on RHEL6/RHEL7 remote machine.
+# This script will setup vnc server on RHEL 6/7/8/9 remote machine.
 #
 
 DISTRO_VERSION=$(grep -o "[0-9]*" /etc/redhat-release | head -1)
@@ -50,8 +50,6 @@ setup_vncserver_systemd() {
 
 	if (( $(echo "$DISTRO_FULL_VERSION >= 8.3" | bc -l) )); then
 		# Since 8.3 version vnc needs to be configured differently.
-		semodule -i /usr/share/selinux/packages/vncsession.pp
-		restorecon /usr/sbin/vncsession /usr/libexec/vncsession-start
 		echo "session=gnome" >> /etc/tigervnc/vncserver-config-defaults
 		echo ":1=<USERNAME>" >> /etc/tigervnc/vncserver.users
 	else
@@ -81,35 +79,38 @@ post_setup_vncserver_rhel8() {
 }
 
 
-if [ $DISTRO_VERSION = "6" ]; then
+if [ "$DISTRO_VERSION" = "6" ]; then
 	yum groupinstall -y Desktop || exit 1
-	yum install -y ansible
 
 	setup_vncserver_upstart
 
 	/sbin/service vncserver start
-elif [ $DISTRO_VERSION = "7" ]; then
+elif [ "$DISTRO_VERSION" = "7" ]; then
 	yum groupinstall -y 'Server with GUI' || exit 1
-	yum install -y ansible
 
 	setup_vncserver_systemd
 
 	systemctl start vncserver@:1.service
-elif [ $DISTRO_VERSION = "8" ]; then
+elif [ "$DISTRO_VERSION" = "8" ]; then
 	yum groupinstall -y Workstation
 	if [ $? -ne 0 ]; then
 		# If Workstation group is not available install 'Server with GUI'
 		yum groupinstall -y 'Server with GUI' || exit 1
 	fi
-	yum install -y dbus-x11 \
-		firefox python3-{pyyaml,jinja2,markupsafe,bcrypt,paramiko,pynacl,pyasn1,pip}
-
-	# ansible can't be installed by dnf (yet)
-	pip3 install ansible
 
 	setup_vncserver_systemd
 
 	post_setup_vncserver_rhel8
+elif [ "$DISTRO_VERSION" = "9" ]; then
+	yum groupinstall -y Workstation
+	if [ $? -ne 0 ]; then
+		# If Workstation group is not available install 'Server with GUI'
+		yum groupinstall -y 'Server with GUI' || exit 1
+	fi
+
+	setup_vncserver_systemd
+
+	systemctl start vncserver@:1.service
 else
 	echo "Error: Unknown distro: '$DISTRO_VERSION'" 1>&2
 	exit 1

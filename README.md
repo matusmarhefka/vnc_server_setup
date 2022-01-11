@@ -1,5 +1,5 @@
 # vnc_server_setup
-Setup vnc server on RHEL 6/7/8 remote machine.
+Setup vnc server on RHEL 6/7/8/9 remote machine.
 
 # Example usage
 
@@ -16,8 +16,9 @@ root@192.168.2.100's password:
 ### Running vnc setup script on root@192.168.2.100:
 root@192.168.2.100's password:
 ...
-Connect to vnc server using '192.168.2.100:1' and password 'pass'.
 Connection to 192.168.2.100 closed.
+
+Connect to vnc server using 'vncviewer SecurityTypes=VncAuth 192.168.2.100:1' and password 'redhat'.
 ```
 
 Now you can use vnc client to connect to the remote machine (for example TigerVNC Viewer).
