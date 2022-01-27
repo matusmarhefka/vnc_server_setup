@@ -9,7 +9,7 @@ DISTRO_FULL_VERSION=$(grep -o "[0-9]\+\.[0-9]\+" /etc/redhat-release)
 
 grep -q <USERNAME> /etc/passwd
 if [ $? -ne 0 ]; then
-	useradd -m <USERNAME>
+	useradd -m -G wheel <USERNAME>
 fi
 
 
