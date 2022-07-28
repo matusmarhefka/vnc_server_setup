@@ -142,7 +142,7 @@ REMOTE_USER="${REMOTE_USER:-root}"
 NO_KNOWN_HOSTS_WARNING=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
 
 echo "### Copying vnc setup script to $REMOTE_USER@$REMOTE_MACHINE_IP:"
-scp "${NO_KNOWN_HOSTS_WARNING[@]}" "$BACKEND" "$REMOTE_USER@$REMOTE_MACHINE_IP:~/"
+scp "${NO_KNOWN_HOSTS_WARNING[@]}" "$BACKEND" "$REMOTE_USER@$REMOTE_MACHINE_IP:"
 echo "### Running vnc setup script on $REMOTE_USER@$REMOTE_MACHINE_IP:"
 ssh "${NO_KNOWN_HOSTS_WARNING[@]}" -t "$REMOTE_USER@$REMOTE_MACHINE_IP" "chmod +x $BACKEND && ./$BACKEND"
 
